@@ -1,0 +1,15 @@
+flask==3.0.3
+oracledb==2.4.1
+cryptography==43.0.1
+python-dotenv==1.0.1
+
+# document reading
+pymupdf==1.24.11
+python-docx==1.1.2
+pytesseract==0.3.13
+pillow==10.4.0
+
+# optional extra formats (extractor.py degrades gracefully if these are missing)
+openpyxl==3.1.5
+python-pptx==1.0.2
+striprtf==0.0.26

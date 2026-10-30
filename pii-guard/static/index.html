@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>PII Guard · Lock files that hold your personal ID</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Figtree:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<header class="top">
+  <div class="brand"><span class="logo" aria-hidden="true">
+    <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="#fff" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l7 3v5c0 5-3 8-7 10-4-2-7-5-7-10V6z"/><path d="M9 12l2.2 2.2L15 10"/></svg></span>
+    <span>PII Guard</span></div>
+  <nav class="tabs" role="tablist">
+    <button class="tab on" data-tab="scan" role="tab">Scan</button>
+    <button class="tab" data-tab="vault" role="tab">Locked files <span id="vaultCount" class="pill">0</span></button>
+    <button class="tab" data-tab="log" role="tab">Activity</button>
+    <button class="tab" data-tab="settings" role="tab">Settings</button>
+  </nav>
+</header>
+
+<main>
+<section id="scan" class="panel on">
+  <div class="hero">
+    <div class="hero-text">
+      <h1>Find the files that hold your PAN, Aadhaar or Voter ID.</h1>
+      <p>One click checks every personal folder on this PC — Desktop, Documents, Downloads, Pictures — and flags files with ID numbers so you can lock them with your own password.</p>
+      <button id="systemScanBtn" class="btn primary big">
+        <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
+        Protect this PC
+      </button>
+      <button id="toggleCustom" class="link-btn" type="button">Scan a specific folder instead</button>
+      <div class="scanbox" id="customBox" hidden>
+        <label for="folder" class="sr">Folder path</label>
+        <input id="folder" type="text" placeholder="C:\Users\You\Documents" autocomplete="off">
+        <button id="scanBtn" class="btn ghost">Scan folder</button>
+      </div>
+    </div>
+    <div class="hero-art" aria-hidden="true">
+      <svg viewBox="0 0 220 220" width="100%" height="100%">
+        <circle cx="110" cy="110" r="100" fill="var(--mint-l)"/>
+        <circle cx="110" cy="110" r="72" fill="#fff"/>
+        <path d="M110 48l48 20v34c0 36-20 58-48 70-28-12-48-34-48-70V68z" fill="var(--mint)"/>
+        <path d="M85 108l18 18 32-36" stroke="#fff" stroke-width="8" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+        <circle cx="178" cy="60" r="16" fill="var(--sun)"/>
+        <circle cx="34" cy="150" r="13" fill="var(--coral)"/>
+        <circle cx="178" cy="166" r="10" fill="var(--sky)"/>
+      </svg>
+    </div>
+    <div class="chips"><span class="chip c1">PAN</span><span class="chip c2">Aadhaar</span><span class="chip c3">Voter ID</span><span class="chip c4">Driving Licence</span><span class="chip c5">Passport</span></div>
+  </div>
+
+  <div id="progress" class="progress" hidden><div class="spin"></div><span id="progressText">Reading files… large folders can take a minute.</span></div>
+
+  <div id="results" hidden>
+    <div class="summary" id="summary"></div>
+    <div class="toolbar">
+      <label class="check"><input type="checkbox" id="selAll" checked> Select all</label>
+      <button id="lockBtn" class="btn coral">Lock selected files</button>
+    </div>
+    <ul id="list" class="list"></ul>
+  </div>
+
+  <details class="autostart">
+    <summary>Want this to check automatically every time you turn the PC on?</summary>
+    <p>PII Guard runs as a normal app — it can't switch itself on at install time, but you can make Windows open it for you every time you log in:</p>
+    <ol>
+      <li>Press <kbd>Win + R</kbd>, type <code>shell:startup</code>, press Enter.</li>
+      <li>In that folder, create a shortcut to a file named <code>start.bat</code> containing one line: <code>python app.py</code> (place it in this project folder).</li>
+      <li>From now on, PII Guard starts quietly in the background each time you log in — open <code>http://127.0.0.1:5000</code> to check it.</li>
+    </ol>
+  </details>
+</section>
+
+<section id="vault" class="panel">
+  <h2>Locked files</h2>
+  <p class="sub">These files are encrypted on your PC. Enter your password to unlock one.</p>
+  <div class="vault-tools">
+    <input id="vaultSearch" type="text" placeholder="Search by file path…" autocomplete="off">
+    <select id="vaultFilter">
+      <option value="">All statuses</option>
+      <option value="ENCRYPTED">Locked only</option>
+      <option value="RESTORED">Unlocked only</option>
+    </select>
+  </div>
+  <ul id="vaultList" class="list"></ul>
+  <div id="vaultPager" class="pager"></div>
+</section>
+
+<section id="log" class="panel">
+  <div class="panel-head">
+    <div><h2>Activity</h2><p class="sub">Every scan, lock and unlock is recorded in your Oracle database.</p></div>
+    <a id="exportLogs" class="btn ghost small" href="/api/logs/export" download>Export CSV</a>
+  </div>
+  <ul id="logList" class="list slim"></ul>
+  <div id="logPager" class="pager"></div>
+</section>
+
+<section id="settings" class="panel">
+  <h2>Settings</h2>
+  <p class="sub">A quick look at how PII Guard is protecting this PC.</p>
+
+  <div class="cards">
+    <div class="scard"><h3>Folders checked by "Protect this PC"</h3>
+      <ul id="folderPreview" class="plain"></ul></div>
+
+    <div class="scard"><h3>What's locked, by type</h3>
+      <div id="breakdown" class="bars"></div></div>
+
+    <div class="scard"><h3>Try a password</h3>
+      <p class="sub">See how strong a password is before you use it to lock files.</p>
+      <input id="tryPw" type="password" placeholder="Type a password to test it" autocomplete="off">
+      <div class="meter"><div id="meterFill" class="meter-fill"></div></div>
+      <p id="meterLabel" class="meter-label">&nbsp;</p>
+      <ul id="meterTips" class="tips"></ul>
+      <button id="suggestBtn" class="btn ghost small" type="button">Suggest a strong password</button>
+    </div>
+  </div>
+</section>
+</main>
+
+<div id="modal" class="modal" hidden>
+  <form class="sheet" id="pwForm">
+    <h3 id="mTitle">Set a password</h3>
+    <p id="mText" class="sub"></p>
+    <label for="pw" class="sr">Password</label>
+    <input id="pw" type="password" placeholder="Password" required minlength="6" autocomplete="off">
+    <div class="meter" id="mMeterBox" hidden><div id="mMeterFill" class="meter-fill"></div></div>
+    <input id="pw2" type="password" placeholder="Repeat password" autocomplete="off">
+    <p class="warn" id="mWarn">If you forget this password, the files can't be recovered.</p>
+    <div class="row"><button type="button" id="mCancel" class="btn ghost">Cancel</button><button class="btn primary" id="mOk">Continue</button></div>
+  </form>
+</div>
+<div id="toast" class="toast" role="status" aria-live="polite"></div>
+<script src="app.js"></script>
+</body>
+</html>
